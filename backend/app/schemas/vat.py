@@ -16,11 +16,20 @@ class VatCreate(BaseModel):
 
 
 class VatUpdate(BaseModel):
-    dye_house_id: Optional[int] = Field(None, alias="dyeHouseId")
+    # 染坊归属不允许走普通编辑，只能经 POST /api/vats/{id}/transfer 改挂
     vat_code: Optional[str] = Field(None, min_length=1, max_length=64, alias="vatCode")
     fiber_type: Optional[str] = Field(None, min_length=1, max_length=64, alias="fiberType")
     capacity_l: Optional[float] = Field(None, gt=0, alias="capacityL")
     status: Optional[VatStatus] = None
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
+class VatTransfer(BaseModel):
+    """跨坊改挂：目标染坊必填；省略新缸号则沿用原号。"""
+
+    target_dye_house_id: int = Field(..., alias="targetDyeHouseId")
+    new_vat_code: Optional[str] = Field(None, min_length=1, max_length=64, alias="newVatCode")
 
     model_config = ConfigDict(populate_by_name=True)
 

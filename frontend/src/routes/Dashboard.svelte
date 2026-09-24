@@ -45,6 +45,31 @@
       <div class="l">近 24 时抽检</div>
     </div>
   </div>
+
+  <div class="panel" style="margin-bottom:1rem;">
+    <p style="margin:0 0 0.75rem;font-weight:600;">各坊染缸数对照</p>
+    <table>
+      <thead>
+        <tr>
+          <th>染坊</th>
+          <th>染缸数</th>
+          <th>染程累计（按现属坊）</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each stats.houseVatStats as h}
+          <tr>
+            <td>{h.dyeHouseName}</td>
+            <td>{h.vatCount}</td>
+            <td>{h.dyeLotCount}</td>
+          </tr>
+        {/each}
+      </tbody>
+    </table>
+    <p style="margin:0.75rem 0 0;color:var(--indigo-mist);font-size:0.85rem;">
+      染缸跨坊改挂后，两坊染缸数即时消长；染程仍挂原缸，按染缸现属坊归集。
+    </p>
+  </div>
 {/if}
 
 <div class="panel">
