@@ -47,6 +47,36 @@
   </div>
 {/if}
 
+{#if stats && stats.houses && stats.houses.length}
+  <div class="panel">
+    <h2 style="margin:0 0 0.75rem;font-size:1.05rem;">各坊染缸数对照</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>染坊</th>
+          <th>染缸数</th>
+        </tr>
+      </thead>
+      <tbody>
+        {#each stats.houses as h}
+          <tr>
+            <td>{h.name}</td>
+            <td>{h.vatCount}</td>
+          </tr>
+        {/each}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td><strong>合计</strong></td>
+          <td>
+            <strong>{stats.houses.reduce((s, h) => s + h.vatCount, 0)}</strong>
+          </td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+{/if}
+
 <div class="panel">
   <p style="margin:0 0 0.75rem;color:var(--indigo-mist);font-size:0.9rem;">
     业务约束：仅当染缸为 <strong>ready</strong> 或 <strong>dyeing</strong> 时可新建染程；新建后染缸自动变为 dyeing。排液可用染缸「完成排液」动作。

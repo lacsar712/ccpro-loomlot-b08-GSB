@@ -25,6 +25,13 @@ class VatUpdate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
 
+class VatReassign(BaseModel):
+    dye_house_id: int = Field(..., alias="dyeHouseId")
+    vat_code: Optional[str] = Field(None, min_length=1, max_length=64, alias="vatCode")
+
+    model_config = ConfigDict(populate_by_name=True)
+
+
 class VatOut(BaseModel):
     model_config = ConfigDict(from_attributes=True, populate_by_name=True)
 

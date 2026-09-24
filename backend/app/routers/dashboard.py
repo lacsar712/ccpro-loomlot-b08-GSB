@@ -11,7 +11,7 @@ from app.models.dye_lot import DyeLot
 from app.models.fastness_check import FastnessCheck
 from app.models.user import User
 from app.models.vat import Vat
-from app.schemas.dashboard import DashboardStats
+from app.schemas.dashboard import DashboardStats, HouseVatCount
 
 router = APIRouter(prefix="/api/dashboard", tags=["dashboard"])
 
@@ -22,6 +22,13 @@ def get_stats(
     _: User = Depends(get_current_user),
 ):
     now = datetime.now(timezone.utc)
+    house_rows = (
+        db.query(DyeHouse.id, DyeHouse.name, func.count(Vat.id))
+        .outerjoin(Vat, Vat.dye_house_id == DyeHouse.id)
+        .group_by(DyeHouse.id, DyeHouse.name)
+        .order_by(DyeHouse.id)
+        .all()
+    )
     return DashboardStats(
         dye_house_total=db.query(func.count(DyeHouse.id)).scalar() or 0,
         vat_ready_count=db.query(func.count(Vat.id)).filter(Vat.status == "ready").scalar() or 0,
@@ -38,4 +45,8 @@ def get_stats(
             .scalar()
             or 0
         ),
+        houses=[
+            HouseVatCount(dye_house_id=hid, name=name, vat_count=cnt)
+            for hid, name, cnt in house_rows
+        ],
     )

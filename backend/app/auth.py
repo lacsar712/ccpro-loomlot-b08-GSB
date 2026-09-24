@@ -55,3 +55,12 @@ def get_current_user(
     if not user:
         raise credentials_exception
     return user
+
+
+def require_role(*roles: str):
+    def dep(user: User = Depends(get_current_user)) -> User:
+        if user.role not in roles:
+            raise HTTPException(status_code=403, detail="权限不足：仅染坊主管可执行该操作")
+        return user
+
+    return dep

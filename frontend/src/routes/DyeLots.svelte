@@ -2,9 +2,11 @@
   import { onMount } from 'svelte';
   import { api, VAT_STATUS, toLocalInput, fromLocalInput } from '../lib/api.js';
 
+  let houses = [];
   let vats = [];
   let rows = [];
   let error = '';
+  let filterHouse = '';
   let form = {
     vatId: '',
     recipeName: '',
@@ -17,7 +19,8 @@
   async function load() {
     error = '';
     try {
-      [vats, rows] = await Promise.all([api('/vats'), api('/dye-lots')]);
+      const qs = filterHouse ? `?dyeHouseId=${filterHouse}` : '';
+      [vats, rows] = await Promise.all([api(`/vats${qs}`), api(`/dye-lots${qs}`)]);
       const usable = vats.filter((v) => v.status === 'ready' || v.status === 'dyeing');
       if (!form.vatId && usable.length) form.vatId = String(usable[0].id);
       else if (!form.vatId && vats.length) form.vatId = String(vats[0].id);
@@ -26,7 +29,18 @@
     }
   }
 
-  onMount(load);
+  async function loadHouses() {
+    try {
+      houses = await api('/dye-houses');
+    } catch (e) {
+      error = e.message;
+    }
+  }
+
+  onMount(() => {
+    loadHouses();
+    load();
+  });
 
   function vatLabel(id) {
     const v = vats.find((x) => x.id === id);
@@ -115,6 +129,22 @@
 </div>
 
 <div class="panel">
+  <div class="toolbar" style="margin-bottom:0.75rem;">
+    <label style="margin:0;display:flex;align-items:center;gap:0.5rem;">
+      <span>按染坊筛选</span>
+      <select
+        bind:value={filterHouse}
+        on:change={() => {
+          form.vatId = '';
+          load();
+        }}>
+        <option value="">全部染坊</option>
+        {#each houses as h}
+          <option value={h.id}>{h.name}</option>
+        {/each}
+      </select>
+    </label>
+  </div>
   <table>
     <thead>
       <tr>

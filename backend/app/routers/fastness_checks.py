@@ -8,6 +8,7 @@ from app.database import get_db
 from app.models.dye_lot import DyeLot
 from app.models.fastness_check import FastnessCheck
 from app.models.user import User
+from app.models.vat import Vat
 from app.schemas.fastness_check import FastnessCheckCreate, FastnessCheckUpdate, FastnessCheckOut
 
 router = APIRouter(prefix="/api/fastness-checks", tags=["fastness-checks"])
@@ -16,12 +17,19 @@ router = APIRouter(prefix="/api/fastness-checks", tags=["fastness-checks"])
 @router.get("", response_model=List[FastnessCheckOut])
 def list_checks(
     dye_lot_id: Optional[int] = Query(None, alias="dyeLotId"),
+    dye_house_id: Optional[int] = Query(None, alias="dyeHouseId"),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
     q = db.query(FastnessCheck)
     if dye_lot_id is not None:
         q = q.filter(FastnessCheck.dye_lot_id == dye_lot_id)
+    if dye_house_id is not None:
+        q = (
+            q.join(DyeLot, FastnessCheck.dye_lot_id == DyeLot.id)
+            .join(Vat, DyeLot.vat_id == Vat.id)
+            .filter(Vat.dye_house_id == dye_house_id)
+        )
     return q.order_by(FastnessCheck.id.desc()).all()
 
 

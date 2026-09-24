@@ -58,17 +58,26 @@ docker compose down
 - 新建染程后，染缸状态自动设为 `dyeing`
 - 可选接口：`POST /api/vats/{id}/drain` 将染缸置为 `drain`
 
+### 染缸改挂（跨坊调动）
+
+- `POST /api/vats/{id}/reassign`，body：`dyeHouseId`（必填，目标染坊）、`vatCode`（可选新缸号，省略则沿用原号）
+- **前置**：仅染坊主管（`admin`）可操作，操作员返回 403
+- **前置**：染缸处于 `dyeing`（有进行中染程）时拒绝改挂，返回 409，须先调 `POST /api/vats/{id}/drain` 排液（`ready` / `drain` 可改挂）
+- 目标染坊已存在同号染缸时返回 409；目标染坊不存在返回 400
+- 普通 `PUT /api/vats/{id}` 不允许变更所属染坊（409），跨坊必须走改挂接口
+- 改挂只更新染缸外键：染程与色牢度记录仍挂原缸主键，但染缸列表、染程、色牢度按 `?dyeHouseId=` 筛选以及看板分坊计数均只出现在新坊，旧坊列表不再包含该缸
+
 ## 主要 API
 
 - `POST /api/auth/login`（OAuth2 表单）
 - `GET /api/auth/me`
 - `GET/POST/PUT/DELETE /api/dye-houses`
-- `GET/POST/PUT/DELETE /api/vats` · `POST /api/vats/{id}/drain`
+- `GET/POST/PUT/DELETE /api/vats` · `POST /api/vats/{id}/drain` · `POST /api/vats/{id}/reassign`（主管改挂）
 - `GET/POST/PUT/DELETE /api/dye-lots`
 - `GET/POST/PUT/DELETE /api/fastness-checks`
-- `GET /api/dashboard/stats`
+- `GET /api/dashboard/stats`（含 `houses` 各坊染缸数对照）
 
-除登录外需 `Authorization: Bearer <token>`。字段对外为 camelCase。
+除登录外需 `Authorization: Bearer <token>`。字段对外为 camelCase。`GET /api/vats`、`GET /api/dye-lots`、`GET /api/fastness-checks` 均支持 `?dyeHouseId=<id>` 按染坊过滤。
 
 ## 目录
 

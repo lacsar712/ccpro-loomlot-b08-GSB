@@ -19,12 +19,15 @@ ALLOWED_VAT_STATUSES = {"ready", "dyeing"}
 @router.get("", response_model=List[DyeLotOut])
 def list_dye_lots(
     vat_id: Optional[int] = Query(None, alias="vatId"),
+    dye_house_id: Optional[int] = Query(None, alias="dyeHouseId"),
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
     q = db.query(DyeLot)
     if vat_id is not None:
         q = q.filter(DyeLot.vat_id == vat_id)
+    if dye_house_id is not None:
+        q = q.join(Vat, DyeLot.vat_id == Vat.id).filter(Vat.dye_house_id == dye_house_id)
     return q.order_by(DyeLot.id.desc()).all()
 
 
